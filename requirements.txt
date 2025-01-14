@@ -1,0 +1,9 @@
+streamlit
+st-on-hover-tabs
+langchain
+langchain-community
+langchain-groq
+sentence-transformers
+faiss-cpu
+transformers
+python-dotenv

@@ -1,0 +1,53 @@
+# Order Processing Formulas for FiberSync AI Assistant
+
+## Spinning
+- Formula Name: Production Efficiency
+- Formula: (Actual Output / Expected Output) * 100
+- Description: Calculates the efficiency of the spinning process.
+- Example Input: Actual Output = 900 kg, Expected Output = 1000 kg
+- Example Output: Efficiency = 90%
+
+- Formula Name: Machine Load Percentage
+- Formula: (Order Quantity / Total Machine Capacity) * 100
+- Description: Determines the load percentage for spinning machines.
+- Example Input: Order Quantity = 1200 kg, Machine Capacity = 2000 kg
+- Example Output: Load Percentage = 60%
+
+## Weaving
+- Formula Name: Warp Utilization
+- Formula: (Warp Consumed / Warp Available) * 100
+- Description: Measures how efficiently warp threads are used.
+- Example Input: Warp Consumed = 500 meters, Warp Available = 600 meters
+- Example Output: Utilization = 83.33%
+
+- Formula Name: Loom Efficiency
+- Formula: (Actual Operating Time / Total Available Time) * 100
+- Description: Calculates the efficiency of weaving looms.
+- Example Input: Operating Time = 20 hours, Available Time = 24 hours
+- Example Output: Efficiency = 83.33%
+
+## Dyeing
+- Formula Name: Dye Uptake Ratio
+- Formula: (Weight of Dye Absorbed / Weight of Fabric) * 100
+- Description: Determines the percentage of dye absorbed by the fabric.
+- Example Input: Dye Absorbed = 50 kg, Fabric Weight = 1000 kg
+- Example Output: Uptake Ratio = 5%
+
+- Formula Name: Color Fastness Index
+- Formula: (Color Retention / Initial Color) * 100
+- Description: Measures how well the fabric retains its color after dyeing.
+- Example Input: Color Retention = 80, Initial Color = 100
+- Example Output: Fastness Index = 80%
+
+## Order Planning
+- Formula Name: Monthly Machine Utilization
+- Formula: (Total Orders * 0.7) / Monthly Capacity
+- Description: Determines if monthly production can meet demand considering a 70% utilization rate.
+- Example Input: Orders = 1400 kg, Monthly Capacity = 2000 kg
+- Example Output: Utilization = 49%
+
+- Formula Name: Optimal Processing Sequence
+- Formula: Based on priority ranking: (Delivery Date / Processing Time) 
+- Description: Orders are ranked for optimal sequencing based on delivery deadlines and required processing time.
+- Example Input: Delivery Date = 10 days, Processing Time = 2 days
+- Example Output: Rank = 5
