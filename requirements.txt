@@ -1,5 +1,5 @@
 streamlit
-st-on-hover-tabs
+streamlit-on-Hover-tabs
 langchain
 langchain-community
 langchain-groq
@@ -7,4 +7,4 @@ sentence-transformers
 faiss-cpu
 transformers
 python-dotenv
-streamlit-on-Hover-tabs
+
