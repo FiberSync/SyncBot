@@ -7,4 +7,4 @@ sentence-transformers
 faiss-cpu
 transformers
 python-dotenv
-st_on_hover_tabs
+streamlit-on-Hover-tabs
