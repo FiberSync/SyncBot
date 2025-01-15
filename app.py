@@ -139,12 +139,11 @@ elif tabs == 'Order Planner':
         # Define prompt template for combining documents
         from langchain.prompts import PromptTemplate
         prompt_template = PromptTemplate(
-            input_variables=["context", "question"],
-            template="""Use the Order Specifications below to give order plan for textile production company. In output donot include yourself or anyother prompts like
-             "Let me know if you have any questions or if you'd like me to generate a new report etc" and also always add paragrpah of methodology in report  answer the question and in professional report style format as your response will direstly 
-            be converted into markdown report generator:
+            input_variables=["context", "question", "guideline"],
+            template="""Use the Order Specifications below to give order plan for textile production company:
             Context: {context}
             Question: {question}
+            guideline for output: {guideline}
             Answer:""",
         )
 
@@ -159,6 +158,7 @@ elif tabs == 'Order Planner':
             retriever=vector_db.as_retriever(),
             return_source_documents=False,  # Set to True if source documents are required
             verbose=True,
+            combine_docs_chain_kwargs={'prompt': prompt_template},
         )
 
         # User input for order specifications
@@ -166,7 +166,9 @@ elif tabs == 'Order Planner':
 
         if order_spec:
             with st.spinner("Generating order plan..."):
-                response = retrieval_chain({"question": order_spec, "chat_history": []})
+                response = retrieval_chain({"question": order_spec, "guideline": """In output donot include yourself or anyother prompts like
+             "Let me know if you have any questions or if you'd like me to generate a new report etc" and also always add paragrpah of methodology in report  answer the question and in professional report style format as your response will direstly 
+            be converted into markdown report generator:""", "chat_history": []})
                   # Provide chat_history if needed
                 with st.expander("View Order Plan"):
                     st.markdown(response["answer"])
