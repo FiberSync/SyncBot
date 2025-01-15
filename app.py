@@ -51,7 +51,7 @@ def create_pdf(content):
         html_content = markdown2.markdown(content,extras=["tables"])
         print(content,"------------",html_content)
         pdf.write_html(html_content)
-        pdf.output("plan.pdf","D")
+        return bytes(pdf.output())
 
 st.markdown('<style>' + open('./style.css').read() + '</style>', unsafe_allow_html=True)
 
@@ -140,7 +140,8 @@ elif tabs == 'Order Planner':
         from langchain.prompts import PromptTemplate
         prompt_template = PromptTemplate(
             input_variables=["context", "question"],
-            template="""Use the Order Specifications below to give order plan for textile production company. answer the question and in professional report style format as your response will direstly 
+            template="""Use the Order Specifications below to give order plan for textile production company. In output donot include yourself or anyother prompts like
+             "Let me know if you have any questions or if you'd like me to generate a new report etc" and also always add paragrpah of methodology in report  answer the question and in professional report style format as your response will direstly 
             be converted into markdown report generator:
             Context: {context}
             Question: {question}
@@ -169,10 +170,17 @@ elif tabs == 'Order Planner':
                   # Provide chat_history if needed
                 with st.expander("View Order Plan"):
                     st.markdown(response["answer"])
+
+        if order_spec:
+            st.download_button(
+                    label="Download Report",
+                    data=create_pdf(response["answer"]),
+                    file_name="plan.pdf",
+                    mime="application/pdf",
+                    )  
+                     
             
-        if order_spec and st.button("Download Order Plan"):
-            create_pdf(response["answer"])
-        
+
 
         
     else:
