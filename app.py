@@ -12,9 +12,46 @@ import os
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain.schema import Document
+from fpdf import FPDF , HTMLMixin
 from langchain.prompts import ChatPromptTemplate
+import markdown2
+
 
 st.set_page_config(layout="wide")
+
+from fpdf import FPDF
+
+
+class PDF(FPDF,HTMLMixin):
+    def header(self):
+        # Rendering logo:
+        self.image("https://i.imghippo.com/files/WoXD6395jA.png", 70, 14, 60)
+        # Setting font: helvetica bold 15
+        self.set_font("Helvetica", style="B", size=12)
+        # Moving cursor to the right:
+        self.cell(80)
+        # Printing title:
+        # self.cell(30, 10, "Order Plan", border=1, align="C")
+        # Performing a line break:
+        self.ln(20)
+
+    def footer(self):
+        # Position cursor at 1.5 cm from bottom:
+        self.set_y(-15)
+        # Setting font: helvetica italic 8
+        self.set_font("helvetica", style="I", size=8)
+        # Printing page number:
+        self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", align="C")
+
+def create_pdf(content):
+        pdf = PDF()
+        pdf.add_page()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.set_font('Helvetica', size=10)
+        html_content = markdown2.markdown(content,extras=["tables"])
+        print(content,"------------",html_content)
+        pdf.write_html(html_content)
+        pdf.output("plan.pdf","D")
 
 st.markdown('<style>' + open('./style.css').read() + '</style>', unsafe_allow_html=True)
 
@@ -90,7 +127,6 @@ elif tabs == 'Order Planner':
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
         # Create a FAISS vector store
-        from langchain.vectorstores import FAISS
         vector_db = FAISS.from_documents(documents, embeddings)
 
         # Define LLM
@@ -104,7 +140,8 @@ elif tabs == 'Order Planner':
         from langchain.prompts import PromptTemplate
         prompt_template = PromptTemplate(
             input_variables=["context", "question"],
-            template="""Use the context below to answer the question as best as possible:
+            template="""Use the Order Specifications below to give order plan for textile production company. answer the question and in professional report style format as your response will direstly 
+            be converted into markdown report generator:
             Context: {context}
             Question: {question}
             Answer:""",
@@ -128,8 +165,15 @@ elif tabs == 'Order Planner':
 
         if order_spec:
             with st.spinner("Generating order plan..."):
-                response = retrieval_chain({"question": order_spec, "chat_history": []})  # Provide chat_history if needed
+                response = retrieval_chain({"question": order_spec, "chat_history": []})
+                  # Provide chat_history if needed
                 with st.expander("View Order Plan"):
                     st.markdown(response["answer"])
+            
+        if order_spec and st.button("Download Order Plan"):
+            create_pdf(response["answer"])
+        
+
+        
     else:
         st.info("Upload or load a valid dataset to proceed.")
