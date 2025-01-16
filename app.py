@@ -17,7 +17,7 @@ from langchain.prompts import ChatPromptTemplate
 import markdown2
 
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="Sync Tools",page_icon=":gear:")
 
 from fpdf import FPDF
 
@@ -49,7 +49,6 @@ def create_pdf(content):
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.set_font('Helvetica', size=10)
         html_content = markdown2.markdown(content,extras=["tables"])
-        print(content,"------------",html_content)
         pdf.write_html(html_content)
         return bytes(pdf.output())
 
@@ -102,7 +101,7 @@ if tabs =='AI Assistant':
             st.markdown(prompt.content)
 
 elif tabs == 'Order Planner':
-    st.header("FiberSync Order Planner")
+    st.image("https://i.ibb.co/nB5JfjL/logo-planner-removebg-preview.png")
 
     # Load your dataset
     try:
@@ -162,7 +161,7 @@ elif tabs == 'Order Planner':
         )
 
         # User input for order specifications
-        order_spec = st.text_input("Please enter your order specifications")
+        order_spec = st.text_area("Please Enter Your Order Specifications :")
 
         if order_spec:
             with st.spinner("Generating order plan..."):
