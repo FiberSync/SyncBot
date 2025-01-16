@@ -59,7 +59,7 @@ with st.sidebar:
                          iconName=['dashboard', 'money'], default_choice=0)
 
 if tabs =='AI Assistant':
-    st.header("FiberSync AI Assistant")
+    st.image("https://i.ibb.co/WPSHQmQ/logo-AI.png")
     
     # Set up environment variable for API key
     os.environ["GROQ_API_KEY"] = "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"
@@ -91,7 +91,7 @@ if tabs =='AI Assistant':
 
     chain = prompt_template | llm
 
-    options = ['English', 'Roman Urdu(English Urdu Mix)']
+    options = ['English','Arabic', 'Urdu','Spanish','French']
     selected_option = st.selectbox('Select Response Language:', options)
 
     if question:
