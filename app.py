@@ -91,7 +91,7 @@ if tabs =='AI Assistant':
 
     chain = prompt_template | llm
 
-    options = ['English','Arabic', 'Urdu','Spanish','French']
+    options = ['English','Spanish','French']
     selected_option = st.selectbox('Select Response Language:', options)
 
     if question:
