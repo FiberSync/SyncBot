@@ -161,7 +161,7 @@ elif tabs == 'Order Planner':
         )
 
         # User input for order specifications
-        order_spec = st.text_area("Please Enter Your Order Specifications :")
+        order_spec = st.text_input("Please Enter Your Order Specifications :")
 
         if order_spec:
             with st.spinner("Generating order plan..."):
