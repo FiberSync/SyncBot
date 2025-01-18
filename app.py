@@ -53,7 +53,7 @@ def create_pdf(content):
         return bytes(pdf.output())
 
 st.markdown('<style>' + open('./style.css').read() + '</style>', unsafe_allow_html=True)
-st.markdown("<style>.stApp{ background-color: #0E1117; }</style>", unsafe_allow_html=True)
+
 
 with st.sidebar:
     tabs = on_hover_tabs(tabName=['AI Assistant', 'Order Planner','Document Analyzer'],   styles = {'navtab': {'background-color':'#111',
