@@ -9,3 +9,4 @@ transformers
 python-dotenv
 markdown2
 fpdf2
+pypdf  
