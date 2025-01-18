@@ -15,7 +15,7 @@ from langchain.schema import Document
 from fpdf import FPDF , HTMLMixin
 from langchain.prompts import ChatPromptTemplate
 import markdown2
-
+from langchain.prompts import PromptTemplate
 
 st.set_page_config(layout="wide", page_title="Sync Tools",page_icon=":gear:")
 
@@ -53,10 +53,16 @@ def create_pdf(content):
         return bytes(pdf.output())
 
 st.markdown('<style>' + open('./style.css').read() + '</style>', unsafe_allow_html=True)
+st.markdown("<style>.stApp{ background-color: #0E1117; }</style>", unsafe_allow_html=True)
 
 with st.sidebar:
-    tabs = on_hover_tabs(tabName=['AI Assistant', 'Order Planner'], 
-                         iconName=['dashboard', 'money'], default_choice=0)
+    tabs = on_hover_tabs(tabName=['AI Assistant', 'Order Planner','Document Analyzer'],   styles = {'navtab': {'background-color':'#111',
+                                                  
+                                                  'font-size': '14px',
+                                                  'transition': '.3s',
+                                                  'white-space': 'nowrap',
+                                                  'text-transform': 'capitalize'}},
+                         iconName=['sms', 'list_alt','picture_as_pdf'], default_choice=0,)
 
 if tabs =='AI Assistant':
     st.image("https://i.ibb.co/WPSHQmQ/logo-AI.png")
@@ -69,12 +75,11 @@ if tabs =='AI Assistant':
         
     # Initialize the ChatGroq model
     llm = ChatGroq(
-        model="gemma2-9b-it",  # Use a suitable model name
+        model="gemma2-9b-it", 
         temperature=0.3,
         max_retries=2,
     )
 
-    # Function to create a prompt
     prompt_template = ChatPromptTemplate.from_messages([
            ("system", """You are a helpful AI assistant working for FiberSync ( Blockchain Based SCM Application ) 
             Answer questions about anything related to the company(Who purchased it), services, or the textile industry specific Question.,
@@ -95,7 +100,6 @@ if tabs =='AI Assistant':
     selected_option = st.selectbox('Select Response Language:', options)
 
     if question:
-        # Generate the prompt messages
         prompt = chain.invoke({"question": question,"language": selected_option})
         with st.expander("View Response"):
             st.markdown(prompt.content)
@@ -103,7 +107,6 @@ if tabs =='AI Assistant':
 elif tabs == 'Order Planner':
     st.image("https://i.ibb.co/nB5JfjL/logo-planner-removebg-preview.png")
 
-    # Load your dataset
     try:
         with open("dset.txt", "r") as f:
             text = f.read()
@@ -112,17 +115,11 @@ elif tabs == 'Order Planner':
         text = ""
 
     if text:
-        # Split the text into chunks
-        from langchain.text_splitter import RecursiveCharacterTextSplitter
         splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=20)
         chunks = splitter.split_text(text)
-
-        # Convert chunks to Document objects
-        from langchain.schema import Document
         documents = [Document(page_content=chunk) for chunk in chunks]
 
-        # Create embeddings
-        from langchain.embeddings import HuggingFaceEmbeddings
+
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
         # Create a FAISS vector store
@@ -135,8 +132,8 @@ elif tabs == 'Order Planner':
             max_retries=2,
         )
 
-        # Define prompt template for combining documents
-        from langchain.prompts import PromptTemplate
+
+
         prompt_template = PromptTemplate(
             input_variables=["context", "question", "guideline"],
             template="""Use the Order Specifications below to give order plan for textile production company:
@@ -151,7 +148,7 @@ elif tabs == 'Order Planner':
         combine_docs_chain = LLMChain(llm=llm, prompt=prompt_template)
 
         # Define the ConversationalRetrievalChain
-        from langchain.chains import ConversationalRetrievalChain
+
         retrieval_chain = ConversationalRetrievalChain.from_llm(
             llm=llm,
             retriever=vector_db.as_retriever(),
@@ -179,10 +176,113 @@ elif tabs == 'Order Planner':
                     file_name="plan.pdf",
                     mime="application/pdf",
                     )  
-                     
+        else:
+            st.info("Upload or load a valid dataset to proceed.")
             
+elif tabs == 'Document Analyzer':
+    st.image("https://i.ibb.co/WPSHQmQ/logo-AI.png")
+    st.title("FiberSync Document Analyzer - LLAMA 3.1")
+
+    # Initialize chat history in session state
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    # Initialize user input in session state
+    if "user_input" not in st.session_state:
+        st.session_state.user_input = ""
+
+    # Define a toggle for resetting the input field
+    if "input_key" not in st.session_state:
+        st.session_state.input_key = 0
+
+    def load_document(file_path):
+        loader = PyPDFLoader(file_path)
+        documents = loader.load()
+        return documents
+
+    def setup_vectorstore(documents):
+        """Set up a FAISS vector store with document embeddings for retrieval."""
+        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200
+        )
+        doc_chunks = text_splitter.split_documents(documents)
+        vectorstore = FAISS.from_documents(doc_chunks, embeddings)
+        return vectorstore
+
+    def create_chain(vectorstore):
+        llm = ChatGroq(
+            model="llama-3.1-70b-versatile",
+            temperature=0
+        )
+        retriever = vectorstore.as_retriever()
+        memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True
+        )
+        chain = ConversationalRetrievalChain.from_llm(
+            llm=llm,
+            retriever=retriever,
+            memory=memory,
+            verbose=True
+        )
+        return chain
+
+    def process_user_query(user_input):
+        """Process user input and update chat history with assistant response."""
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
+        with st.spinner("Processing request..."):
+            response = st.session_state.conversation_chain({"question": user_input})
+            assistant_response = response["answer"]
+            st.session_state.chat_history.append({"role": "assistant", "content": assistant_response})
+
+    # File upload section
+    uploaded_file = st.file_uploader(label="Upload your PDF file", type=["pdf"])
+
+
+    if uploaded_file:
+        file_path = os.path.join(os.getcwd(), uploaded_file.name)
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+
+        # Load document and set up vectorstore if not already in session state
+        if "vectorstore" not in st.session_state:
+            documents = load_document(file_path)
+            st.session_state.vectorstore = setup_vectorstore(documents)
+
+        # Set up conversation chain if not already in session state
+        if "conversation_chain" not in st.session_state:
+            st.session_state.conversation_chain = create_chain(st.session_state.vectorstore)
+
+
+    st.markdown("<div class='chat-box'>", unsafe_allow_html=True)
+    for message in st.session_state.chat_history:
+        role = message["role"]
+        content = message["content"]
+        css_class = "user-message" if role == "user" else "assistant-message"
+        st.markdown(f"<div class='chat-container {css_class}'>{content}</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+    st.markdown("<div class='input-box-container'>", unsafe_allow_html=True)
+    user_input = st.text_input(
+        "Ask LLAMA...",
+        key=str(st.session_state.input_key),  # Increment key each time to reset input
+        label_visibility="collapsed"
+    )
+    send_button = st.button("Send", key="send_button")
+
+
+    if send_button and user_input:
+        process_user_query(user_input)
+        st.session_state.input_key += 1  # Increment the key to reset the input field
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
 
 
         
-    else:
-        st.info("Upload or load a valid dataset to proceed.")
+
+
